@@ -1,0 +1,168 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+  VENDOR
+}
+
+model User {
+  id    String    @id @default(uuid())
+  email String @unique
+  username  String
+  password String
+  role Role @default(USER)
+
+  vendorProfile VendorProfile?
+  parking Parking[]
+  booking Booking[]
+
+
+  createdAt DateTime @default(now())
+
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model Booking{
+  id String @id @default(uuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+
+  parkingId String
+  parking Parking @relation(fields: [parkingId], references: [id])
+
+  vehicleType VehicleType
+  startTime DateTime
+  endTime DateTime
+  bookingStatus BookingStatus @default(PENDING)
+  totalPrice Float
+
+  parkingTypeId String
+  parkingType ParkingType @relation(fields: [parkingTypeId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([parkingId])
+}
+
+model VendorProfile {
+
+  id String @id @default(uuid())
+
+  phoneNumber String
+  userId String @unique
+  user  User @relation(fields: [userId], references: [id])
+
+  idType String
+  idNumber String
+  documentUrl String
+  documentId String
+
+
+  verificationStatus String @default("pending")
+
+  createdAt DateTime @default(now())
+
+}
+
+model Parking {
+  id String @id @default(uuid())
+  parkingName String 
+  ownerName String
+  pincode String
+  state String
+  city String
+  address String
+ 
+  isAvailable Boolean @default(true)
+ 
+  vendorId String
+  vendor User @relation(fields: [vendorId], references: [id])
+
+  parkingTypes ParkingType[]
+  parkingImages ParkingImages[]
+  bookings Booking[]
+  parkingSlots  ParkingSlots[]
+
+  createdAt DateTime @default(now())
+
+  @@index([vendorId])
+  @@index([city, state])
+
+}
+
+model ParkingImages{
+  id String @id @default(uuid())
+  imageUrl String[]
+  imageId String[]
+
+  parkingId String
+  parking Parking @relation(fields: [parkingId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+enum VehicleType {
+  TWO_WHEELER
+  FOUR_WHEELER
+  HEAVY_VEHICLE
+}
+
+model ParkingType{
+  id String @id @default(uuid())
+  vehicleType VehicleType @default(TWO_WHEELER)
+  pricePerHour Float
+  pricePerDay Float
+  totalSlots Int
+  slotsAvailable Int
+
+  parkingId String
+  parking Parking @relation(fields: [parkingId], references: [id])
+
+  bookings Booking[]
+  parkingSlots ParkingSlots[]
+
+
+  createdAt DateTime @default(now())
+
+  @@index([vehicleType])
+}
+
+enum SlotStatus {
+  available
+  booked
+}
+
+model ParkingSlots{
+  id String @id @default(uuid())
+
+  slot_status SlotStatus @default(available)
+
+  parkingId  String
+  parking Parking @relation(fields: [parkingId], references: [id])
+
+  parkingTypeId String
+  parkingType ParkingType @relation(fields: [parkingTypeId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
