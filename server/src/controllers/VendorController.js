@@ -89,7 +89,7 @@ const addParking = async (req, res) => {
         const pricePerDay = parseFloat(req.body.pricePerDay, 10)
         const slotsAvailable = parseInt(req.body.slotsAvailable, 10)
 
-        if(!vehicleType || !totalSlots || !pricePerHour || !slotsAvailable || !pricePerDay){
+        if(!vehicleType || totalSlots == null || pricePerHour == null || slotsAvailable == null || pricePerDay == null){
             return res.status(400).json({ error: 'All fields are required' });
         }
 
@@ -133,12 +133,14 @@ const addParking = async (req, res) => {
             }
         });
 
-        const parkingImages = await prisma.parkingImages.create({
-            data: {
-                imageUrl: imageUrls,
-                imageId: imageIds,
-                parkingId: createParking.id
-            }
+        const imageData = imageUrls.map((url, idx) => ({
+            imageUrl: url,
+            imageId: imageIds[idx],
+            parkingId: createParking.id
+        }));
+
+        const parkingImages = await prisma.parkingImages.createMany({
+            data: imageData
         });
 
         const slotArray = [];
@@ -176,17 +178,7 @@ const addParking = async (req, res) => {
     }
 }
 
-const parkings = async(req,res) =>{
-    try {
 
-        const vendorId = req.user.id;
-        v
-        
-        
-    } catch (error) {
-        
-    }
-}
 
 
 export {

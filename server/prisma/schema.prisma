@@ -112,8 +112,8 @@ model Parking {
 
 model ParkingImages{
   id String @id @default(uuid())
-  imageUrl String[]
-  imageId String[]
+  imageUrl String
+  imageId String
 
   parkingId String
   parking Parking @relation(fields: [parkingId], references: [id])
